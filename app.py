@@ -42,6 +42,10 @@ def get_url(KEYWORD , browser):
     # サムネイル画像のリンクを取得(ここでコケる場合はセレクタを実際に確認して変更する)
     thumbnail_results = browser.find_element(By.CSS_SELECTOR,"img.rg_i")
 
+    st.write("thumbnail_results : ")
+    st.write(thumbnail_results)
+    st.write("")
+
     # ダウンロードする枚数
     download_number = 50
     # クリックなど動作後に待つ時間(秒)
@@ -50,6 +54,11 @@ def get_url(KEYWORD , browser):
     # サムネイルをクリックして、各画像URLを取得
     image_urls = set()
     for img in thumbnail_results[:download_number]:
+
+        st.write("img : ")
+        st.write(img)
+        st.write("")
+
         try:
             img.click()
             time.sleep(sleep_between_interactions)
