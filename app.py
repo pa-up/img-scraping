@@ -39,11 +39,16 @@ def get_url(KEYWORD , browser):
 
     # サムネイル画像のURL取得
     browser.get(url.format(q=KEYWORD))
-    # サムネイル画像のリンクを取得(ここでコケる場合はセレクタを実際に確認して変更する)
-    thumbnail_results = browser.find_element(By.CSS_SELECTOR,"img.rg_i")
 
-    st.write("thumbnail_results : ")
-    st.write(thumbnail_results)
+    # ページの一番下へスクロールして新しいサムネイル画像を表示させる
+    browser.execute_script('window.scrollTo(0, document.body.scrollHeight);')
+    time.sleep(1)
+
+    # サムネイル画像のリンクを取得
+    thumbnail_URLS = browser.find_element(By.CSS_SELECTOR,"img.rg_i").get_attribute('src')
+
+    st.write("thumbnail_URLS : ")
+    st.write(thumbnail_URLS)
     st.write("")
 
     # ダウンロードする枚数
@@ -51,44 +56,21 @@ def get_url(KEYWORD , browser):
     # クリックなど動作後に待つ時間(秒)
     sleep_between_interactions = 2
 
-    # サムネイルをクリックして、各画像URLを取得
-    image_urls = set()
-    for img in thumbnail_results[:download_number]:
+    count = 0
+    for img_url in range(thumbnail_URLS):
+        if count + 1 >= download_number:
+            break
+        data = {
+            '画像URL':img_url,
+        }
+        item_ls.append(data)
+        count = count + 1
 
-        st.write("img : ")
-        st.write(img)
-        st.write("")
-
-        try:
-            img.click()
-            time.sleep(sleep_between_interactions)
-        except Exception:
-            continue
-        # 一発でurlを取得できないので、候補を出してから絞り込む
-        # 'n3VNCb'は変更されることあるので、クリックした画像のエレメントをみて適宜変更する
-        url_candidates = browser.find_element(By.CSS_SELECTOR,'n3VNCb')
-
-        st.write("")
-        st.write("url_candidates : ", url_candidates)
-        st.write("")
-
-        for candidate in url_candidates:
-            url = candidate.get_attribute('src')
-            if url and 'https' in url:
-                image_urls.add(url)
-                st.write("url : ",url)
     # 少し待たないと正常終了しなかったので3秒追加
     time.sleep(sleep_between_interactions+3)
     browser.quit()
-    return image_urls
-
-
-def get_data(image_urls):
-    for image_url in image_urls:
-        data = {
-            '画像URL':image_url,
-        }
-        item_ls.append(data)
+    
+    return item_ls
 
 
 def main():
@@ -100,8 +82,7 @@ def main():
 
     if KEYWORD != "":
         browser = browser_setup()
-        image_urls = get_url(KEYWORD , browser)
-        get_data(image_urls)
+        item_ls = get_url(KEYWORD , browser)
         df = pd.DataFrame(item_ls)
         csv = df.to_csv(index=False)
 
