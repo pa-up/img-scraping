@@ -3,6 +3,13 @@ import pandas as pd
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 import time
+import os
+import cv2
+import numpy as np
+import requests
+from io import BytesIO
+import zipfile
+from PIL import Image
 from webdriver_manager.chrome import ChromeDriverManager
 from webdriver_manager.core.utils import ChromeType
 from selenium.webdriver.chrome import service as fs
@@ -48,30 +55,37 @@ def get_url(KEYWORD , browser):
     thumbnail_elements = browser.find_elements(By.CSS_SELECTOR, "img.rg_i")
     thumbnail_URLS = [element.get_attribute('src') for element in thumbnail_elements]
 
-    # st.write("thumbnail_URLS : ")
-    # st.write(thumbnail_URLS)
-    # st.write("")
+    # # ダウンロードする枚数の上限
+    # download_number = 100
+    # # クリックなど動作後に待つ時間(秒)
+    # sleep_between_interactions = 2
 
-    # ダウンロードする枚数
-    download_number = 100
-    # クリックなど動作後に待つ時間(秒)
-    sleep_between_interactions = 2
-
-    count = 0
-    for img_url in thumbnail_URLS:
-        if count + 1 >= download_number:
-            break
-        data = {
-            '画像URL':img_url,
-        }
-        item_ls.append(data)
-        count = count + 1
+    # count = 0
+    # for img_url in thumbnail_URLS:
+    #     if count + 1 >= download_number:
+    #         break
+    #     data = {
+    #         '画像URL':img_url,
+    #     }
+    #     item_ls.append(data)
+    #     count = count + 1
 
     # 少し待たないと正常終了しなかったので3秒追加
-    time.sleep(sleep_between_interactions+3)
+    time.sleep(5)
     browser.quit()
     
-    return item_ls
+    return item_ls , thumbnail_URLS
+
+
+def url_to_img_folda(thumbnail_URLS , saved_img_folder):
+    count = 0
+    for url in thumbnail_URLS:
+        response = requests.get(url)
+        img = Image.open(BytesIO(response.content))
+        img = np.array(img)
+        
+        file_name = saved_img_folder + str(count) + ".jpg"
+        cv2.imwrite(file_name , img)
 
 
 def main():
@@ -83,17 +97,41 @@ def main():
 
     if KEYWORD != "":
         browser = browser_setup()
-        item_ls = get_url(KEYWORD , browser)
-        df = pd.DataFrame(item_ls)
-        csv = df.to_csv(index=False)
+        item_ls , thumbnail_URLS = get_url(KEYWORD , browser)
 
-        # CSVファイルのダウンロードボタンを表示
+        saved_img_folder = "./img/"
+        if not os.path.exists(saved_img_folder):
+            os.makedirs(saved_img_folder)
+        
+        # 全ての画像URLを画像ファイルを格納したファイルに格納
+        url_to_img_folda(thumbnail_URLS , saved_img_folder)
+
+        # フォルダを圧縮してバイトストリームに変換
+        zip_buffer = BytesIO()
+        with zipfile.ZipFile(zip_buffer, mode="w", compression=zipfile.ZIP_DEFLATED) as zf:
+            for root, dirs, files in os.walk(saved_img_folder):
+                for file in files:
+                    zf.write(os.path.join(root, file), arcname=os.path.relpath(os.path.join(root, file), saved_img_folder))
+        zip_buffer.seek(0)
+
+        # ダウンロードボタンを作成
         st.download_button(
-            label='CSVをダウンロード',
-            data=csv,
-            file_name='画像データ.csv',
-            mime='text/csv'
+            label="Download folder",
+            data=zip_buffer.getvalue(),
+            file_name="img.zip",
+            mime="application/zip"
         )
+
+        # df = pd.DataFrame(item_ls)
+        # csv = df.to_csv(index=False)
+
+        # # CSVファイルのダウンロードボタンを表示
+        # st.download_button(
+        #     label='CSVをダウンロード',
+        #     data=csv,
+        #     file_name='画像データ.csv',
+        #     mime='text/csv'
+        # )
 
 
 if __name__ == '__main__':
