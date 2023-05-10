@@ -53,7 +53,7 @@ def get_url(KEYWORD , browser):
     # st.write("")
 
     # ダウンロードする枚数
-    download_number = 50
+    download_number = 100
     # クリックなど動作後に待つ時間(秒)
     sleep_between_interactions = 2
 
