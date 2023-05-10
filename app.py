@@ -58,7 +58,7 @@ def get_url(KEYWORD , browser):
     sleep_between_interactions = 2
 
     count = 0
-    for img_url in range(thumbnail_URLS):
+    for img_url in thumbnail_URLS:
         if count + 1 >= download_number:
             break
         data = {
