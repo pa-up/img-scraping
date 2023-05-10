@@ -13,6 +13,7 @@ from PIL import Image
 from webdriver_manager.chrome import ChromeDriverManager
 from webdriver_manager.core.utils import ChromeType
 from selenium.webdriver.chrome import service as fs
+from selenium.common.exceptions import ElementClickInterceptedException
 
 
 item_ls = []
@@ -78,11 +79,20 @@ def get_url(KEYWORD , browser):
     return item_ls , thumbnail_URLS , thumbnail_elements
 
 
-def url_to_img_folda(thumbnail_URLS , saved_img_folder , thumbnail_elements):
+def url_to_img_folda(browser , saved_img_folder , thumbnail_elements):
     count = 0
     for thumbnail_element in thumbnail_elements:
         # サムネイル画像をクリック
-        thumbnail_element.click()
+        click_count = 3
+        for i in range(click_count):
+            try:
+                # サムネイル画像をクリック
+                thumbnail_element.click()
+            except ElementClickInterceptedException:
+                print(f'***** click エラー: {i + 1}/{click_count}')
+                browser.execute_script('arguments[0].scrollIntoView(true);', thumbnail_element)
+                time.sleep(1)
+        
 
         # url取得
         url = thumbnail_element.get_attribute('src')  # サムネイル画像のsrc属性値
@@ -111,7 +121,7 @@ def main():
             os.makedirs(saved_img_folder)
         
         # 全ての画像URLを画像ファイルを格納したファイルに格納
-        url_to_img_folda(thumbnail_URLS , saved_img_folder , thumbnail_elements)
+        url_to_img_folda(browser , saved_img_folder , thumbnail_elements)
 
         # フォルダを圧縮してバイトストリームに変換
         zip_buffer = BytesIO()
