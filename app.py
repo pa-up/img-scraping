@@ -45,11 +45,12 @@ def get_url(KEYWORD , browser):
     time.sleep(1)
 
     # サムネイル画像のリンクを取得
-    thumbnail_URLS = browser.find_element(By.CSS_SELECTOR,"img.rg_i").get_attribute('src')
+    thumbnail_elements = browser.find_elements(By.CSS_SELECTOR, "img.rg_i")
+    thumbnail_URLS = [element.get_attribute('src') for element in thumbnail_elements]
 
-    st.write("thumbnail_URLS : ")
-    st.write(thumbnail_URLS)
-    st.write("")
+    # st.write("thumbnail_URLS : ")
+    # st.write(thumbnail_URLS)
+    # st.write("")
 
     # ダウンロードする枚数
     download_number = 50
