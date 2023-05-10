@@ -52,10 +52,9 @@ def get_url(KEYWORD , browser):
     time.sleep(1)
 
     # サムネイル画像のリンクを取得
-    thumbnail_elements = browser.find_elements(By.CSS_SELECTOR, '#islmp img')
-    # thumbnail_URLS = [element.get_attribute('src') for element in thumbnail_elements]
-    thumbnail_URLS = ""
-    tmb_alts = [tmb.get_attribute('alt') for tmb in thumbnail_elements]
+    thumbnail_elements = browser.find_elements(By.CSS_SELECTOR, "img.rg_i")
+    thumbnail_URLS = [element.get_attribute('src') for element in thumbnail_elements]
+    # tmb_alts = [tmb.get_attribute('alt') for tmb in thumbnail_elements]
 
     # # ダウンロードする枚数の上限
     # download_number = 100
