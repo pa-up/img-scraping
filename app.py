@@ -17,8 +17,6 @@ from webdriver_manager.core.utils import ChromeType
 from selenium.webdriver.chrome import service as fs
 
 
-item_ls = []
-
 def browser_setup():
     """ブラウザを起動する関数"""
     #ブラウザの設定
@@ -26,8 +24,7 @@ def browser_setup():
     options.add_argument('--headless')
     options.add_argument('--no-sandbox')
     options.add_argument('--disable-dev-shm-usage')
-    #ブラウザの起動
-    # webdriver_managerによりドライバーをインストール
+    #ブラウザの起動（webdriver_managerによりドライバーをインストール）
     CHROMEDRIVER = ChromeDriverManager(chrome_type=ChromeType.CHROMIUM).install()  # chromiumを使用したいので引数でchromiumを指定しておく
     service = fs.Service(CHROMEDRIVER)
     browser = webdriver.Chrome(
@@ -57,22 +54,7 @@ def get_url(KEYWORD , browser):
     thumbnail_elements = browser.find_elements(By.CSS_SELECTOR, "img.rg_i")
     thumbnail_URLS = [element.get_attribute('src') for element in thumbnail_elements]
 
-    # # ダウンロードする枚数の上限
-    # download_number = 100
-    # # クリックなど動作後に待つ時間(秒)
-    # sleep_between_interactions = 2
-
-    # count = 0
-    # for img_url in thumbnail_URLS:
-    #     if count + 1 >= download_number:
-    #         break
-    #     data = {
-    #         '画像URL':img_url,
-    #     }
-    #     item_ls.append(data)
-    #     count = count + 1
-
-    # 少し待たないと正常終了しなかったので3秒追加
+    # 少し待たないと正常終了しなかったので5秒待機
     time.sleep(5)
     browser.quit()
     
@@ -97,14 +79,9 @@ def url_to_img_folda(thumbnail_URLS , saved_img_folder):
             is_url_valid = False
 
         # 画像URLの先頭が「data:」or「https:」なら画像を保存
-        st.write("count : " , count)
-        st.write("url : " , url)
         if is_url_valid == True:
             img = np.array(pil_img)
             file_name = saved_img_folder + str(count) + ".jpg"
-            # if url.startswith('data:'):
-                # st.write("file_name : " , file_name)
-                # st.write("img : " , img.shape)
             cv2.imwrite(file_name , img)
         count = count + 1
 
@@ -147,18 +124,6 @@ def main():
             file_name="img.zip",
             mime="application/zip"
         )
-
-        # df = pd.DataFrame(item_ls)
-        # csv = df.to_csv(index=False)
-
-        # # CSVファイルのダウンロードボタンを表示
-        # st.download_button(
-        #     label='CSVをダウンロード',
-        #     data=csv,
-        #     file_name='画像データ.csv',
-        #     mime='text/csv'
-        # )
-
 
 if __name__ == '__main__':
     main()
