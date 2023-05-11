@@ -101,9 +101,9 @@ def url_to_img_folda(thumbnail_URLS , saved_img_folder):
         if is_url_valid == True:
             img = np.array(pil_img)
             file_name = saved_img_folder + str(count) + ".jpg"
-            if url.startswith('data:'):
-                print(f"画像のファイル名 : {file_name}")
-                print(f"img : {img.shape}")
+            if url.startswith('画像のファイル名:'):
+                st.write("files_count : " , file_name)
+                st.write("img : " , img.shape)
             cv2.imwrite(file_name , img)
 
 
@@ -127,7 +127,7 @@ def main():
 
         # フォルダ内のファイル数を取得
         files_count = len( os.listdir(saved_img_folder) )
-        print(f"files_count : {files_count}")
+        st.write("files_count : " , files_count)
 
         # フォルダを圧縮してバイトストリームに変換
         zip_buffer = BytesIO()
