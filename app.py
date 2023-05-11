@@ -102,7 +102,7 @@ def url_to_img_folda(thumbnail_URLS , saved_img_folder):
         if is_url_valid == True:
             img = np.array(pil_img)
             file_name = saved_img_folder + str(count) + ".jpg"
-            if url.startswith('画像のファイル名:'):
+            if url.startswith('data:'):
                 st.write("files_count : " , file_name)
                 st.write("img : " , img.shape)
             cv2.imwrite(file_name , img)
