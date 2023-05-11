@@ -8,12 +8,13 @@ import cv2
 import numpy as np
 import requests
 from io import BytesIO
+import base64
+import io
 import zipfile
 from PIL import Image
 from webdriver_manager.chrome import ChromeDriverManager
 from webdriver_manager.core.utils import ChromeType
 from selenium.webdriver.chrome import service as fs
-from selenium.common.exceptions import ElementClickInterceptedException
 
 
 item_ls = []
@@ -55,7 +56,6 @@ def get_url(KEYWORD , browser):
     # サムネイル画像のリンクを取得
     thumbnail_elements = browser.find_elements(By.CSS_SELECTOR, "img.rg_i")
     thumbnail_URLS = [element.get_attribute('src') for element in thumbnail_elements]
-    # tmb_alts = [tmb.get_attribute('alt') for tmb in thumbnail_elements]
 
     # # ダウンロードする枚数の上限
     # download_number = 100
@@ -76,33 +76,31 @@ def get_url(KEYWORD , browser):
     time.sleep(5)
     browser.quit()
     
-    return item_ls , thumbnail_URLS , thumbnail_elements
+    return thumbnail_URLS
 
 
-def url_to_img_folda(browser , saved_img_folder , thumbnail_elements):
+def url_to_img_folda(thumbnail_URLS , saved_img_folder):
     count = 0
-    for thumbnail_element in thumbnail_elements:
-        # サムネイル画像をクリック
-        click_count = 3
-        for i in range(click_count):
-            try:
-                # サムネイル画像をクリック
-                thumbnail_element.click()
-            except ElementClickInterceptedException:
-                print(f'***** click エラー: {i + 1}/{click_count}')
-                browser.execute_script('arguments[0].scrollIntoView(true);', thumbnail_element)
-                time.sleep(1)
-        
+    for url in thumbnail_URLS:
+        is_url_valid = True
 
-        # url取得
-        url = thumbnail_element.get_attribute('src')  # サムネイル画像のsrc属性値
+        # 画像URLの先頭が「data:」or「https:」で場合分け
+        if url.startswith('data:'):
+            pil_img = Image.open(io.BytesIO(base64.b64decode(url.split(',')[1])))
+        elif url.startswith('https:'):
+            response = requests.get(url)
+            pil_img = Image.open(BytesIO(response.content))
+        else:
+            is_url_valid = False
 
-        response = requests.get(url)
-        img = Image.open(BytesIO(response.content))
-        img = np.array(img)
-        
-        file_name = saved_img_folder + str(count) + ".jpg"
-        cv2.imwrite(file_name , img)
+        # 画像URLの先頭が「data:」or「https:」なら画像を保存
+        if is_url_valid == True:
+            img = np.array(pil_img)
+            file_name = saved_img_folder + str(count) + ".jpg"
+            if url.startswith('data:'):
+                print(f"画像のファイル名 : {file_name}")
+                print(f"img : {img.shape}")
+            cv2.imwrite(file_name , img)
 
 
 def main():
@@ -114,14 +112,14 @@ def main():
 
     if KEYWORD != "":
         browser = browser_setup()
-        item_ls , thumbnail_URLS , thumbnail_elements = get_url(KEYWORD , browser)
+        thumbnail_URLS = get_url(KEYWORD , browser)
 
         saved_img_folder = "./img/"
         if not os.path.exists(saved_img_folder):
             os.makedirs(saved_img_folder)
         
         # 全ての画像URLを画像ファイルを格納したファイルに格納
-        url_to_img_folda(browser , saved_img_folder , thumbnail_elements)
+        url_to_img_folda(thumbnail_URLS , saved_img_folder)
 
         # フォルダを圧縮してバイトストリームに変換
         zip_buffer = BytesIO()
