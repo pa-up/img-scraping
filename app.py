@@ -84,12 +84,15 @@ def url_to_img_folda(thumbnail_URLS , saved_img_folder):
     for url in thumbnail_URLS:
         is_url_valid = True
 
-        # 画像URLの先頭が「data:」or「https:」で場合分け
-        if url.startswith('data:'):
-            pil_img = Image.open(io.BytesIO(base64.b64decode(url.split(',')[1])))
-        elif url.startswith('https:'):
-            response = requests.get(url)
-            pil_img = Image.open(BytesIO(response.content))
+        if url is not None:
+            # 画像URLの先頭が「data:」or「https:」で場合分け
+            if url.startswith('data:'):
+                pil_img = Image.open(io.BytesIO(base64.b64decode(url.split(',')[1])))
+            elif url.startswith('https:'):
+                response = requests.get(url)
+                pil_img = Image.open(BytesIO(response.content))
+            else:
+                is_url_valid = False
         else:
             is_url_valid = False
 
