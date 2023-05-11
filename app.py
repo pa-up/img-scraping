@@ -4,6 +4,7 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 import time
 import os
+import shutil
 import cv2
 import numpy as np
 import requests
@@ -96,8 +97,12 @@ def main():
         browser = browser_setup()
         thumbnail_URLS = get_url(KEYWORD , browser)
 
+        # 画像を格納するフォルダを新規生成
         saved_img_folder = "./img/"
-        if not os.path.exists(saved_img_folder):
+        if os.path.exists(saved_img_folder):
+            shutil.rmtree(saved_img_folder)
+            os.makedirs(saved_img_folder)
+        else:
             os.makedirs(saved_img_folder)
         
         # 全ての画像URLを画像ファイルを格納したファイルに格納
