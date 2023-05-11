@@ -97,6 +97,7 @@ def url_to_img_folda(thumbnail_URLS , saved_img_folder):
             is_url_valid = False
 
         # 画像URLの先頭が「data:」or「https:」なら画像を保存
+        print(url)
         if is_url_valid == True:
             img = np.array(pil_img)
             file_name = saved_img_folder + str(count) + ".jpg"
@@ -123,6 +124,10 @@ def main():
         
         # 全ての画像URLを画像ファイルを格納したファイルに格納
         url_to_img_folda(thumbnail_URLS , saved_img_folder)
+
+        # フォルダ内のファイル数を取得
+        files_count = len( os.listdir(saved_img_folder) )
+        print(f"files_count : {files_count}")
 
         # フォルダを圧縮してバイトストリームに変換
         zip_buffer = BytesIO()
