@@ -78,9 +78,10 @@ def url_to_img_folda(thumbnail_URLS , saved_img_folder):
 
         # 画像URLの先頭が「data:」or「https:」なら画像を保存
         if is_url_valid == True:
-            img = np.array(pil_img)
+            rgb_img = np.array(pil_img)
             file_name = saved_img_folder + str(count) + ".jpg"
-            cv2.imwrite(file_name , img)
+            bgr_img = cv2.cvtColor(rgb_img, cv2.COLOR_RGB2BGR)
+            cv2.imwrite(file_name , bgr_img)
         count = count + 1
 
 
