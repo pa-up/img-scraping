@@ -41,8 +41,6 @@ def get_url(KEYWORD , browser):
     browser.get(url)
     browser.implicitly_wait(5)
 
-    st.write("画像検索窓の表示が成功")
-
     # サムネイル画像のURL取得
     browser.get(url.format(q=KEYWORD))
 
@@ -103,11 +101,10 @@ def main():
         
         # 全ての画像URLを画像ファイルを格納したファイルに格納
         url_to_img_folda(thumbnail_URLS , saved_img_folder)
-        st.write("")
 
         # フォルダ内のファイル数を取得
         files_count = len( os.listdir(saved_img_folder) )
-        st.write("files_count : " , files_count)
+        st.write("取得した画像数 : " , files_count , "枚")
 
         # フォルダを圧縮してバイトストリームに変換
         zip_buffer = BytesIO()
@@ -119,7 +116,7 @@ def main():
 
         # ダウンロードボタンを作成
         st.download_button(
-            label="Download folder",
+            label="全画像をダウンロード",
             data=zip_buffer.getvalue(),
             file_name="img.zip",
             mime="application/zip"
